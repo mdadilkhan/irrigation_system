@@ -1,0 +1,36 @@
+.home_container{
+    position: relative;
+    background: url(./bg.png);
+    background-size: cover;
+    min-height: 100vh;
+   
+}
+
+.btn{
+    width: 154px;
+    height: 34px;
+    margin-top: 50px;
+    border-radius: 10px;
+    outline: none;
+    margin-left: 20px;
+    color: white;
+    background-color:#1e2639 ;
+
+}
+
+.btn:hover{
+  background-color: #122b71;
+}
+
+
+#popup {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border: 1px solid black;
+}
+
+

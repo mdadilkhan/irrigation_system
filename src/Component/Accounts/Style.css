@@ -13,7 +13,7 @@ body{
 .container{
     background: url(./bg.png);
    
-   background-size: cover;
+    background-size: cover;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -42,7 +42,7 @@ body{
     z-index: 10;           
 }
 .header{
-    margin-bottom: 40px;
+    margin-bottom: 20px;
 }
 header{
     display: flex;

@@ -2,6 +2,9 @@ import React,{useState}from 'react'
 import "./Style.css";
 import "boxicons/css/boxicons.min.css";
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import axios from 'axios';
+import { useNavigate } from "react-router-dom";
+
 
 const Accounts=()=>{
     const initialLoginValue={
@@ -18,34 +21,57 @@ const Accounts=()=>{
     const [account,setAccount]=useState("Login");
     const [login,setLoginValue]=useState(initialLoginValue);
     const [signup,setSignupValue]=useState(initialSignupValue);
-  
-    console.log(login.value);
+    const [error,setError]=useState(false);
+    const navigate=useNavigate();
+    console.log(login);
+
     const onSubmitForm=(e)=>{
       e.preventDefault();
       e.target.reset();
     }
 
     const onInputLoginValueChange=(e)=>{
-        console.log(e.target.name,e.target.value);
+
         setLoginValue({...login,[e.target.name]:e.target.value})
     }
 
-console.log("login>>>",login);
-console.log("signup>>>",signup);
+
 
     const onInputSignupValueChange=(e)=>{
-        console.log(e.target.name,e.target.value);
+      
         setSignupValue({...signup,[e.target.name]:e.target.value})
     }
 
 
         
-  const loginUser=()=>{
+  const signupUser=async()=>{
+     try {
+       const response=await axios.post('https://lucky-sunbonnet-fly.cyclic.app/user/register',signup);
+       setAccount("Login");
 
+     } catch (error) {
+      setError(true);
+
+     }
+     
   }
 
 
+  const loginUser=()=>{
+    axios.post('https://lucky-sunbonnet-fly.cyclic.app/user/login',login)
+    .then((response)=>{
+  
+      localStorage.setItem('token',response.data.token);
+      localStorage.setItem('username',response.data.email);
+      localStorage.setItem('name',response.data.name);
+      navigate('/')
+    }).catch((error)=>{
+  
+      setError(true);
+    })
 
+ 
+  }
     return(
         <>
             {
@@ -85,6 +111,9 @@ console.log("signup>>>",signup);
             <div className="input-box">
               <input type="submit" className="input-submit" value="SIGN IN" onClick={()=>loginUser()}/>
             </div>
+            {
+              error && <p style={{color:'red'}}>Incorrect credentials </p>
+            }
             <div className="forgot">
               <span onClick={()=>{setAccount("Signup")}}>Sign Up</span>
               <span>Forgot password?</span>
@@ -139,12 +168,14 @@ console.log("signup>>>",signup);
               />
               <i className="bx bx-lock"></i>
             </div>
+            {
+              error && <p style={{color:'red'}}>error in sigup</p>
+            }
             <div className="input-box">
-              <input type="submit" className="input-submit" value="SIGN IN" />
+              <input type="submit" className="input-submit" value="REGISTER" onClick={()=>signupUser()} />
             </div>
             <div className="forgot">
               <span onClick={()=>{setAccount("Login")}}>Sign In</span>
-              <span>Forgot password?</span>
             </div>
           </form>
         </div>
