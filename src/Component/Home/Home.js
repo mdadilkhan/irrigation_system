@@ -32,7 +32,19 @@ const listOfMachine=()=>{
      listOfMachine();
   },[])
 
-  
+
+  let box=document.querySelector('.machine-container');
+
+  const pressPrev=()=>{
+    let width=box.clientWidth;
+    console.log(width);
+    box.scrollLeft=box.scrollLeft-width;
+  }
+  const pressNext=()=>{
+    let width=box.clientWidth;
+    console.log(width);
+    box.scrollLeft=box.scrollLeft+width;
+  }
 
    
   return (
@@ -42,6 +54,10 @@ const listOfMachine=()=>{
       <div className='home_container'>
          <AddMachine/> 
       </div>
+      <div className='carousel'>
+         <button className='prev-btn' onClick={pressPrev}><p>&lt;</p></button>
+         <button className='next-btn' onClick={pressNext}><p>&gt;</p></button>
+
       <div className='machine-container'>
          {
           machine.map((item,index)=>
@@ -49,6 +65,8 @@ const listOfMachine=()=>{
           )
          }
        </div>  
+      </div>
+      
    </>
   )
 }

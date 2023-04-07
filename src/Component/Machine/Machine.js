@@ -12,8 +12,9 @@ console.log(data);
          <h2>{data.productKey}</h2>
          <h2>{data.address}</h2>
        </div>
-      <div className='show-btn'>
-        <button>show</button>
+      <div className='btn-box'>
+        <button className='btn show'>show</button>
+        <button className='btn delete'>Delete</button>
       </div>
 
     </div>
