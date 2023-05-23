@@ -12,6 +12,8 @@ function App() {
            <Routes>
               <Route path="/accounts" element={<Accounts/>}/>
               <Route path="/" element={<Home />} />
+              <Route path="/control/:id" element={<Home />} />
+
            </Routes>
         </BrowserRouter>
      </>

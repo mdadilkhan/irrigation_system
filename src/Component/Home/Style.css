@@ -56,3 +56,11 @@
   cursor: pointer;
 }
 
+
+
+.chart{
+  position: absolute;
+  z-index: 100;
+  left: 550px;
+  bottom: -50px;
+}
