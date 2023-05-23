@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import './AddMachine.css'
 import axios from 'axios'
-const AddMachine = () => {
+import config from "../../../config.json"
+const AddMachine = (props) => {
 
 const myStyle={
   height:'400px',
@@ -41,9 +42,10 @@ const headers = {
 
 
 const addMachine=()=>{
-   axios.post('https://lucky-sunbonnet-fly.cyclic.app/machine/register',machine,{headers})
+   axios.post(`${config.apiUrl}/machine/register`,machine,{headers})
    .then((response)=>{
     console.log(response.data);
+    props.reload()
    }).catch((error)=>{
     console.log(error);
    })

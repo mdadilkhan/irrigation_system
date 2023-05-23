@@ -22,7 +22,7 @@ const logout=()=>{
    <>
     <div className="navbar">
       <div className="logo">
-        <label className='rainbow_label'>SiS</label>
+        <label className='rainbow_label'>Irrigation System</label>
       </div>
       <div className="header">
         <Link className='link'>About</Link>

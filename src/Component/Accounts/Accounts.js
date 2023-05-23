@@ -5,6 +5,8 @@ import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 
+import config from "../../config.json"
+
 
 const Accounts=()=>{
     const initialLoginValue={
@@ -46,7 +48,7 @@ const Accounts=()=>{
         
   const signupUser=async()=>{
      try {
-       const response=await axios.post('https://lucky-sunbonnet-fly.cyclic.app/user/register',signup);
+       const response=await axios.post(`${config.apiUrl}/user/register`,signup);
        setAccount("Login");
 
      } catch (error) {
@@ -58,7 +60,7 @@ const Accounts=()=>{
 
 
   const loginUser=()=>{
-    axios.post('https://lucky-sunbonnet-fly.cyclic.app/user/login',login)
+    axios.post(`${config.apiUrl}/user/login`,login)
     .then((response)=>{
   
       localStorage.setItem('token',response.data.token);
