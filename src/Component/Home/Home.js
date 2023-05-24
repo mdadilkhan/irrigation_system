@@ -6,16 +6,124 @@ import Machine from "../Machine/Machine";
 import Controll from "../Controll/Controll";
 import axios from "axios";
 import { useParams } from "react-router-dom";
-import LineChart from "../LineChart/LineChart";
+import Chart from "../Chart/Chart";
+// import { Bar } from "react-chartjs-2";
+// import { Chart as ChartJS } from "chart.js/auto";
 import config from "../../config.json";
 
 const Home = () => {
   const [machine, setMachine] = useState([]);
   const [graphType, setGraphType] = useState("monthly"); //monthly,daily
   const [year, setYear] = useState(2023);
-  const [macData, setMacData]=useState({})
-  const [thresholdMoisture, setThresholdMoisture]=useState()
-  const [isMotorOn, setIsMotorOn]=useState()
+  const [macData, setMacData] = useState({});
+  const [thresholdMoisture, setThresholdMoisture] = useState();
+  const [isMotorOn, setIsMotorOn] = useState();
+  const [uniqueId, setUniqueId] = useState();
+  const [monthlyData, setMonthlyData] = useState({
+    title: {
+      text: "Motor Usage in Hours",
+    },
+    theme: "light2",
+    axisX: {
+      interval: 1,
+      labelAngle: 30,
+    },
+    axisY: {
+      includeZero: true,
+    },
+    data: [
+      {
+        // Change type to "doughnut", "line", "splineArea", etc.
+        type: "column",
+
+        dataPoints: [],
+      },
+    ],
+  });
+  const [dailyData, setDailyData] = useState({
+    title: {
+      text: "Motor Usage in Minutes",
+    },
+    theme: "light2",
+    axisX: {
+      interval: 1,
+      labelAngle: 90,
+    },
+    axisY: {
+      includeZero: true,
+    },
+    data: [
+      {
+        // Change type to "doughnut", "line", "splineArea", etc.
+        type: "column",
+
+        dataPoints: [],
+      },
+    ],
+  });
+
+  const convertToMonthlyData = () => {
+    if (Object.keys(macData).length === 0) return monthlyData;
+    const tempData = macData.motorUsagePerDay.filter((value, ind) => {
+      console.log("year", value.createdAt.substr(6));
+      return value.createdAt.substr(6) == year;
+    });
+    console.log(tempData);
+    const data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const labels = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    for (let i of tempData) {
+      data[parseInt(i.createdAt.substr(3, 2)) - 1] += i.durationMinutes;
+      // console.log(data[parseInt(i.createdAt.substr(3, 2))], parseInt(i.createdAt.substr(3, 2)))
+    }
+    for (let i = 0; i < data.length; i++) {
+      data[i] /= 60;
+      data[i] = Math.round((data[i] + Number.EPSILON) * 100) / 100;
+      data[i] = { label: labels[i], y: data[i] };
+    }
+    const newData = { ...monthlyData };
+    newData.data[0].dataPoints = data;
+    // console.log("came here", newData.datasets[0].data);
+    return newData;
+  };
+
+  const convertToDailyData = () => {
+    if (Object.keys(macData).length === 0) return dailyData;
+    const tempData = macData.motorUsagePerDay.filter((value, ind) => {
+      console.log("year", value.createdAt.substr(6));
+      return value.createdAt.substr(6) == year;
+    });
+    const data = [];
+    for (let i of tempData) {
+      data.push({
+        label: i.createdAt,
+        y: Math.round((i.durationMinutes + Number.EPSILON) * 100) / 100,
+      });
+    }
+    const newData = { ...dailyData };
+    newData.data[0].dataPoints = data;
+    return newData;
+  };
+
+  useEffect(() => {
+    setMonthlyData(convertToMonthlyData());
+  }, [macData, year]);
+
+  useEffect(() => {
+    setDailyData(convertToDailyData());
+  }, [macData, year]);
 
   const token = localStorage.getItem("token");
   const headers = {
@@ -51,26 +159,30 @@ const Home = () => {
     box.scrollLeft = box.scrollLeft + width;
   };
 
-  const { id } = useParams();
-  console.log("machine id", id);
+  // const { id } = useParams();
+  // console.log("machine id", id);
 
   const manualControll = (val) => {
     console.log("inside axios", val);
-    const params = {
-      id: id,
-    };
+    // const params = {
+    //   id: uniqueId,
+    // };
     const data = {
       motorOn: val,
     };
 
     axios
-      .put(`${config.apiUrl}/machine/motor-threshold/manual/${id}`, data, {
-        params,
-        headers,
-      })
+      .put(
+        `${config.apiUrl}/machine/motor-threshold/manual/${uniqueId}`,
+        data,
+        {
+          // params,
+          headers,
+        }
+      )
       .then((response) => {
         console.log(response);
-        handleShow(id)
+        handleShow(uniqueId);
       })
       .catch((error) => {
         console.log(error);
@@ -79,20 +191,20 @@ const Home = () => {
 
   const autoControll = (val) => {
     console.log("inside axios", val);
-    const params = {
-      id: id,
-    };
+    // const params = {
+    //   id: uniqueId,
+    // };
     const data = {
       thresholdMoisture: val,
     };
     axios
-      .put(`${config.apiUrl}/machine/motor-threshold/auto/${id}`, data, {
-        params,
+      .put(`${config.apiUrl}/machine/motor-threshold/auto/${uniqueId}`, data, {
+        // params,
         headers,
       })
       .then((resposne) => {
         // console.log(resposne);
-        handleShow(id)
+        handleShow(uniqueId);
       })
       .catch((error) => {
         console.log(error);
@@ -100,22 +212,22 @@ const Home = () => {
   };
 
   //code for line chart
-  const userDate1 = () => {
-    const params = {
-      id: id,
-    };
-    axios
-      .get(`${config.apiUrl}/machine/${id}`, {
-        params,
-        headers,
-      })
-      .then((response) => {
-        console.log(response);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
+  // const userDate1 = () => {
+  //   const params = {
+  //     id: id,
+  //   };
+  //   axios
+  //     .get(`${config.apiUrl}/machine/${id}`, {
+  //       params,
+  //       headers,
+  //     })
+  //     .then((response) => {
+  //       console.log(response);
+  //     })
+  //     .catch((error) => {
+  //       console.log(error);
+  //     });
+  // };
   // const [selectedDate, setSelectedDate] = useState('');
 
   // const handleDateChange = (event) => {
@@ -242,8 +354,10 @@ const Home = () => {
       .then((response) => {
         console.log();
         setMacData(response.data);
-        setThresholdMoisture(response.data.thresholdMoisture)
-        setIsMotorOn(response.data.isMotorOn)
+        setThresholdMoisture(response.data.thresholdMoisture);
+        setIsMotorOn(response.data.isMotorOn);
+        setUniqueId(_id);
+        // setMonthlyData(convertToMonthlyData())
         // setUserData(userData.datasets[0].data=motorUsagePerDay.map((data)=>data.durationMinutes))
       })
       .catch((error) => {
@@ -270,20 +384,14 @@ const Home = () => {
     ],
     datasets: [
       {
-        label: `Motor Usage in Hr  year wise- ${year}`,
+        label: `Motor Usage in hours`,
         data: UserData.map((data) => {
           console.log(data.durationMinutes);
           return (data.hr / 60).toFixed(1);
         }),
-        backgroundColor: [
-          "rgba(75,192,192,1)",
-          "#ecf0f1",
-          "#50AF95",
-          "#f3ba2f",
-          "#2a71d0",
-        ],
+        backgroundColor: ["rgb(99,181,247, 1)"],
         borderColor: "black",
-        borderWidth: 2,
+        borderWidth: 1,
       },
     ],
   });
@@ -303,7 +411,12 @@ const Home = () => {
 
         <div className="machine-container">
           {machine.map((item, index) => (
-            <Machine key={index} data={item} reload={listOfMachine} show={handleShow} />
+            <Machine
+              key={index}
+              data={item}
+              reload={listOfMachine}
+              show={handleShow}
+            />
           ))}
         </div>
       </div>
@@ -319,16 +432,25 @@ const Home = () => {
         <p>Selected date: {selectedDate}</p>
       </div> */}
 
-      {id === undefined ? (
+      {uniqueId === undefined ? (
         ""
       ) : (
         <React.Fragment>
-
-          <Controll _id={id} reload={handleShow} soilMoisture={macData.soilMoisture} thresholdMoisture={{value:thresholdMoisture, fn:setThresholdMoisture}} isMotorOn={{value:isMotorOn, fn:setIsMotorOn}} fun={{ manual: manualControll, auto: autoControll }} />
+          <Controll
+            _id={uniqueId}
+            reload={handleShow}
+            soilMoisture={macData.soilMoisture}
+            thresholdMoisture={{
+              value: thresholdMoisture,
+              fn: setThresholdMoisture,
+            }}
+            isMotorOn={{ value: isMotorOn, fn: setIsMotorOn }}
+            fun={{ manual: manualControll, auto: autoControll }}
+          />
         </React.Fragment>
       )}
 
-      {id === undefined ? (
+      {uniqueId === undefined ? (
         ""
       ) : (
         <div className="chart" style={{ width: 800 }}>
@@ -343,38 +465,23 @@ const Home = () => {
               <option value="daily">daily</option>
             </select>
             <br></br>
-            {graphType === "monthly" ? (
-              <React.Fragment>
-                <label for="year-input">Enter a year:</label>
-                <input
-                  type="number"
-                  id="year-input"
-                  name="year"
-                  min="2018"
-                  max="2023"
-                  className="year-input"
-                  onChange={(e)=>setYear(e.target.value)}
-                  value={year}
-                ></input>
-                
-              </React.Fragment>
-            ) : (
-              <div className="d-none">
-                <label for="year-input">Enter a year:</label>
-                <input
-                  type="number"
-                  id="year-input"
-                  name="year"
-                  min="2018"
-                  max="2023"
-                  className="year-input"
-                  defaultValue={2023}
-                ></input>
-                {/* <button className="btn show">Set Year</button> */}
-              </div>
-            )}
+            <label for="year-input">Enter a year:</label>
+            <input
+              type="number"
+              id="year-input"
+              name="year"
+              min="2018"
+              max="2023"
+              className="year-input"
+              onChange={(e) => setYear(e.target.value)}
+              value={year}
+            ></input>
           </div>
-          <LineChart chartData={userData} />
+          <Chart
+            graphType={graphType}
+            monthlyData={monthlyData}
+            dailyData={dailyData}
+          />
         </div>
       )}
     </>

@@ -25,7 +25,6 @@ const logout=()=>{
         <label className='rainbow_label'>Irrigation System</label>
       </div>
       <div className="header">
-        <Link className='link'>About</Link>
         <Link className='link' onClick={()=>{logout()}}>Logout</Link>
       </div>
     </div>
